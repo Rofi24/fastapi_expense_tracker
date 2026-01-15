@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]     # Server ASGI buat jalanin app
+sqlalchemy            # ORM Database
+asyncpg               # Driver PostgreSQL Async (Ngebut!)
+pydantic-settings     # Buat load .env
+alembic               # Database migration
+python-jose[cryptography] # Buat bikin token JWT
+passlib[bcrypt]       # Buat hash password
+python-multipart      # Buat login form handler
