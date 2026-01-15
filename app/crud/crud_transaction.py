@@ -22,3 +22,18 @@ async def get_transactions(db: AsyncSession, user_id: int, skip: int = 0, limit:
         .limit(limit)
     )
     return result.scalars().all()
+
+# FUNGSI DELETE
+async def remove_transaction(db: AsyncSession, transaction_id: int, user_id: int):
+    # 1. Cari dulu barangnya pake select()
+    result = await db.execute(
+        select(Transaction).filter(Transaction.id == transaction_id, Transaction.owner_id == user_id)
+    )
+    trx = result.scalars().first()
+    
+    # 2. Kalau ketemu, HAPUS.
+    if trx:
+        await db.delete(trx)
+        await db.commit()
+    
+    return trx

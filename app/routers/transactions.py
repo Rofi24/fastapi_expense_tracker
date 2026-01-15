@@ -29,3 +29,22 @@ async def read_transactions(
 ):
     # Cuma balikin data punya user yang lagi login
     return await crud_transaction.get_transactions(db=db, user_id=current_user.id, skip=skip, limit=limit)
+
+# 3. ENDPOINT DELETE
+@router.delete("/{transaction_id}")
+async def delete_transaction(
+    transaction_id: int, 
+    db: AsyncSession = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    # Pake await karena crud-nya async
+    deleted_item = await crud_transaction.remove_transaction(
+        db=db, 
+        transaction_id=transaction_id, 
+        user_id=current_user.id
+    )
+    
+    if not deleted_item:
+        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
+        
+    return {"message": "Berhasil dihapus"}
