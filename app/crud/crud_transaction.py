@@ -37,3 +37,23 @@ async def remove_transaction(db: AsyncSession, transaction_id: int, user_id: int
         await db.commit()
     
     return trx
+
+# FUNGSI EDIT
+async def update_transaction(db: AsyncSession, transaction_id: int, transaction_data: TransactionCreate, user_id: int):
+    # 1. Cari data lama
+    result = await db.execute(
+        select(Transaction).filter(Transaction.id == transaction_id, Transaction.owner_id == user_id)
+    )
+    db_trx = result.scalars().first()
+    
+    # 2. Kalau ketemu, UPDATE isinya
+    if db_trx:
+        db_trx.title = transaction_data.title
+        db_trx.amount = transaction_data.amount
+        db_trx.category = transaction_data.category
+        db_trx.description = transaction_data.description
+        
+        await db.commit()
+        await db.refresh(db_trx)
+        
+    return db_trx

@@ -6,9 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ExpensePro</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
@@ -205,7 +203,7 @@
                 <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
                 <p class="text-secondary mb-0">Ringkasan keuanganmu hari ini.</p>
             </div>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal" onclick="resetForm()">
                 <i class="bi bi-plus-lg me-1"></i> Transaksi Baru
             </button>
         </div>
@@ -251,6 +249,7 @@
                             <th>Kategori</th>
                             <th>Nominal</th>
                             <th>Ket</th>
+                            <th class="text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="transactionTable">
@@ -276,6 +275,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="addForm" onsubmit="return false">
+                        <input type="hidden" id="inpId">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-secondary">Judul</label>
                             <input type="text" class="form-control" id="inpTitle" placeholder="Contoh: Nasi Padang"
@@ -316,73 +316,60 @@
     <script>
         const token = localStorage.getItem('accessToken');
         const modalElement = new bootstrap.Modal(document.getElementById('addModal'));
+        let allTransactions = []; // VARIABEL GLOBAL BUAT NYIMPEN DATA
 
         if (!token) {
-            alert("Sesi habis, silakan login kembali.");
             window.location.href = 'login.html';
         }
 
-        // Helper Format Rupiah (Kita taruh atas biar bisa dipake dimana aja)
         const formatRupiah = (number) => {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
         }
 
-        // 1. Load Data
+        // 1. LOAD DATA
         async function loadTransactions() {
             try {
-                // Pastikan ada slash di akhir (best practice FastAPI)
                 const response = await fetch('http://127.0.0.1:8000/transactions/', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': 'Bearer ' + token,
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Authorization': 'Bearer ' + token }
                 });
 
-                if (response.status === 401) {
-                    logout();
-                    return;
-                }
+                if (response.status === 401) { logout(); return; }
 
                 const data = await response.json();
-
-                // FIX 1: Panggil renderTable SEKALI saja
+                
+                allTransactions = data; // SIMPAN DATA KE GLOBAL BIAR BISA DIEDIT
+                
                 renderTable(data);
-
-                // Update kartu summary
                 calculateTotal(data);
 
             } catch (error) {
                 console.error("Error:", error);
-                document.getElementById('loadingState').innerHTML = `<p class="text-danger">Gagal koneksi ke server :(</p>`;
             }
         }
 
-        // 2. Render Tabel
+        // 2. RENDER TABEL (+ TOMBOL EDIT)
         function renderTable(transactions) {
             const tbody = document.getElementById('transactionTable');
             const loading = document.getElementById('loadingState');
             const empty = document.getElementById('emptyState');
 
             loading.classList.add('d-none');
+            tbody.innerHTML = '';
 
             if (transactions.length === 0) {
                 empty.classList.remove('d-none');
                 return;
             }
+            empty.classList.add('d-none');
 
-            tbody.innerHTML = '';
             transactions.forEach(trx => {
-                const dateObj = new Date(trx.date_posted).toLocaleDateString('id-ID', {
-                    day: 'numeric', month: 'short', year: 'numeric'
-                });
+                const dateObj = new Date(trx.date_posted).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-                // Logic Warna Badge
                 let badgeColor = 'bg-secondary';
-                if (trx.category === 'Makanan') badgeColor = 'bg-warning text-dark';
-                if (trx.category === 'Transport') badgeColor = 'bg-info text-dark';
-                if (trx.category === 'Tagihan') badgeColor = 'bg-danger';
-                if (trx.category === 'Elektronik') badgeColor = 'bg-primary';
+                if(trx.category === 'Makanan') badgeColor = 'bg-warning text-dark';
+                if(trx.category === 'Transport') badgeColor = 'bg-info text-dark';
+                if(trx.category === 'Elektronik') badgeColor = 'bg-primary';
+                if(trx.category === 'Tagihan') badgeColor = 'bg-danger';
 
                 const row = `
                     <tr>
@@ -391,8 +378,10 @@
                         <td><span class="badge ${badgeColor} bg-opacity-10 border border-opacity-25 rounded-pill category-badge">${trx.category}</span></td>
                         <td class="fw-bold text-danger">${formatRupiah(trx.amount)}</td>
                         <td class="text-muted small">${trx.description || '-'}</td>
-                        
                         <td class="text-end pe-4">
+                            <button class="btn btn-sm btn-light text-primary border-0 me-1" onclick="prepEdit(${trx.id})">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
                             <button class="btn btn-sm btn-light text-danger border-0" onclick="deleteTransaction(${trx.id})">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -403,28 +392,43 @@
             });
         }
 
-        // 3. Logic Hitung Total
-        function calculateTotal(data) {
-            let totalAmount = 0;
-            data.forEach(trx => {
-                totalAmount += trx.amount;
-            });
+        // 3. FUNGSI PERSIAPAN EDIT (MUNCULIN DATA KE FORM)
+        function prepEdit(id) {
+            // Cari data di variabel global
+            const trx = allTransactions.find(t => t.id === id);
+            
+            if(trx) {
+                // Isi form dengan data lama
+                document.getElementById('inpId').value = trx.id; // ISI ID RAHASIA
+                document.getElementById('inpTitle').value = trx.title;
+                document.getElementById('inpAmount').value = trx.amount;
+                document.getElementById('inpCategory').value = trx.category;
+                document.getElementById('inpDesc').value = trx.description;
 
-            document.getElementById('totalExpenseDisplay').innerText = formatRupiah(totalAmount);
-            document.getElementById('totalCountDisplay').innerText = data.length + " Transaksi";
+                // Ganti judul modal biar keren (Opsional)
+                document.querySelector('.modal-title').innerText = "✏️ Edit Transaksi";
+                
+                // Tampilin Modal
+                modalElement.show();
+            }
         }
 
-        // 4. Simpan Data Transaksi
+        // 4. FUNGSI RESET FORM (BUAT TOMBOL TAMBAH BARU)
+        function resetForm() {
+            document.getElementById('addForm').reset();
+            document.getElementById('inpId').value = ''; // KOSONGIN ID
+            document.querySelector('.modal-title').innerText = "📝 Catat Pengeluaran";
+        }
+
+        // 5. LOGIC SIMPAN (BISA SAVE BARU ATAU UPDATE)
         async function saveTransaction() {
+            const id = document.getElementById('inpId').value; // CEK ID RAHASIA
             const title = document.getElementById('inpTitle').value;
             const amount = document.getElementById('inpAmount').value;
             const category = document.getElementById('inpCategory').value;
             const description = document.getElementById('inpDesc').value;
 
-            if (!title || !amount) {
-                alert("Judul dan Nominal wajib diisi bro!");
-                return;
-            }
+            if(!title || !amount) { alert("Isi judul & nominal!"); return; }
 
             const payload = {
                 title: title,
@@ -433,10 +437,19 @@
                 description: description
             };
 
+            // TENTUKAN URL & METHOD (POST atau PUT)
+            let url = 'http://127.0.0.1:8000/transactions/';
+            let method = 'POST';
+
+            // Kalo ada ID, berarti kita lagi EDIT (PUT)
+            if (id) {
+                url = `http://127.0.0.1:8000/transactions/${id}`;
+                method = 'PUT';
+            }
+
             try {
-                // Pastikan ada slash di akhir
-                const response = await fetch('http://127.0.0.1:8000/transactions/', {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Authorization': 'Bearer ' + token,
                         'Content-Type': 'application/json'
@@ -446,15 +459,33 @@
 
                 if (response.ok) {
                     modalElement.hide();
-                    document.getElementById('addForm').reset();
-                    loadTransactions();
+                    resetForm();
+                    loadTransactions(); // Refresh data
                 } else {
-                    alert("Gagal nyimpen data!");
+                    alert("Gagal menyimpan data!");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error koneksi ke server");
+                alert("Error koneksi");
             }
+        }
+
+        async function deleteTransaction(id) {
+            if (!confirm("Yakin hapus?")) return;
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/transactions/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (response.ok) loadTransactions();
+            } catch (error) { console.error(error); }
+        }
+
+        function calculateTotal(data) {
+            let totalAmount = 0;
+            data.forEach(trx => totalAmount += trx.amount);
+            document.getElementById('totalExpenseDisplay').innerText = formatRupiah(totalAmount);
+            document.getElementById('totalCountDisplay').innerText = data.length + " Transaksi";
         }
 
         function logout() {
@@ -463,31 +494,6 @@
         }
 
         loadTransactions();
-
-        // 5. HAPUS TRANSAKSI
-        async function deleteTransaction(id) {
-            // Konfirmasi dulu biar gak kepencet
-            if (!confirm("Yakin mau hapus data ini?")) return;
-
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/transactions/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    }
-                });
-
-                if (response.ok) {
-                    // Kalau sukses, refresh tabel
-                    loadTransactions();
-                } else {
-                    alert("Gagal menghapus data!");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Error koneksi");
-            }
-        }
     </script>
 </body>
 

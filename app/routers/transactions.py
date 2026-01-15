@@ -48,3 +48,23 @@ async def delete_transaction(
         raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
         
     return {"message": "Berhasil dihapus"}
+
+# 4, ENDPOIT EDIT
+@router.put("/{transaction_id}")
+async def update_transaction(
+    transaction_id: int, 
+    transaction_data: TransactionCreate, # pake schema Create buat update
+    db: AsyncSession = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    updated_item = await crud_transaction.update_transaction(
+        db=db, 
+        transaction_id=transaction_id, 
+        transaction_data=transaction_data, 
+        user_id=current_user.id
+    )
+    
+    if not updated_item:
+        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
+        
+    return updated_item

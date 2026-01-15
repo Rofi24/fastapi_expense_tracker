@@ -13,6 +13,10 @@ class TransactionBase(BaseModel):
 class TransactionCreate(TransactionBase):
     pass
 
+# Schema buat Edit (Input dari user)
+class TransactionUpdate(TransactionCreate):
+    pass
+
 # Schema buat Response (Output ke user)
 class TransactionResponse(TransactionBase):
     id: int
