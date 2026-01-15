@@ -5,89 +5,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - ExpensePro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
+        :root {
+            /* Warna Pro: Bukan biru ngejreng, tapi Indigo/Ungu Gelap yang elegan */
+            --primary-color: #4f46e5; 
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc; /* Abu sangat muda */
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --card-hover-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased; /* Biar font tajem */
         }
 
+        /* NAVBAR: Putih Bersih Minimalis */
+        .navbar {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px); /* Efek kaca buram dikit */
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 0;
+        }
+        
         .navbar-brand {
-            font-weight: 700;
+            font-weight: 800;
+            color: var(--text-main) !important; /* Warna gelap */
             letter-spacing: -0.5px;
+            font-size: 1.25rem;
         }
 
-        .card {
-            border: none;
+        .btn-logout {
+            color: var(--text-muted);
+            border: 1px solid #e2e8f0;
+            background: white;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: #f1f5f9;
+            color: #ef4444; /* Merah pas hover */
+            border-color: #fecaca;
+        }
+
+        /* KARTU STATISTIK */
+        .stat-card {
+            background: white;
+            border: 1px solid #e2e8f0; /* Garis tipis halus */
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            padding: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--card-hover-shadow);
+            border-color: var(--primary-color); /* Nyala dikit pas dihover */
         }
 
-        .table th {
-            font-weight: 600;
-            font-size: 0.85rem;
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+        
+        /* Gradient yang lebih soft */
+        .bg-icon-primary { background: #e0e7ff; color: var(--primary-color); }
+        .bg-icon-orange { background: #ffedd5; color: #ea580c; }
+
+        .stat-label {
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
         }
 
-        .badge {
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        /* TOMBOL UTAMA */
+        .btn-primary {
+            background-color: var(--text-main); /* Hitam elegan */
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background-color: #000;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* TABEL MODERN */
+        .table-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .table thead th {
+            background-color: #f8fafc;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            color: var(--text-main);
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .category-badge {
             font-weight: 500;
-            padding: 0.5em 0.8em;
+            padding: 0.35em 0.8em;
+            border-radius: 6px;
+            font-size: 0.75rem;
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+   <nav class="navbar sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#"><i class="bi bi-wallet2 me-2"></i>ExpensePro</a>
-            <button class="btn btn-danger btn-sm fw-bold" onclick="logout()">
-                <i class="bi bi-box-arrow-right me-1"></i> Logout
-            </button>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div style="width: 24px; height: 24px; background: var(--primary-color); border-radius: 6px;"></div>
+                ExpensePro
+            </a>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-none d-md-block text-end me-2">
+                    <small class="d-block text-muted" style="font-size: 11px; line-height: 1;">Logged in as</small>
+                    <span class="fw-bold" style="font-size: 13px;">Admin User</span>
+                </div>
+                <button class="btn btn-logout rounded-3 fw-medium btn-sm" onclick="logout()">
+                    Sign Out
+                </button>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-end mb-4">
             <div>
-                <h2 class="fw-bold text-dark">Dashboard Keuangan</h2>
-                <p class="text-muted">Pantau pemasukan dan pengeluaranmu di sini.</p>
+                <h2 class="fw-bold text-dark mb-1">Dashboard</h2>
+                <p class="text-secondary mb-0">Ringkasan keuanganmu hari ini.</p>
             </div>
-            <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
-                <i class="bi bi-plus-lg me-1"></i> Catat Transaksi
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="bi bi-plus-lg me-1"></i> Transaksi Baru
             </button>
         </div>
 
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-secondary">
-                            <tr>
-                                <th class="ps-4 py-3">Tanggal</th>
-                                <th class="py-3">Judul Transaksi</th>
-                                <th class="py-3">Kategori</th>
-                                <th class="py-3">Nominal</th>
-                                <th class="py-3">Keterangan</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionTable">
-                        </tbody>
-                    </table>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div>
+                            <p class="stat-label">Total Pengeluaran</p>
+                            <h3 class="stat-value" id="totalExpenseDisplay">Rp 0</h3>
+                            <small class="text-muted">Bulan ini</small>
+                        </div>
+                        <div class="stat-icon bg-icon-primary">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex align-items-start justify-content-between">
+                        <div>
+                            <p class="stat-label">Total Transaksi</p>
+                            <h3 class="stat-value" id="totalCountDisplay">0</h3>
+                            <small class="text-muted">Data tercatat</small>
+                        </div>
+                        <div class="stat-icon bg-icon-orange">
+                            <i class="bi bi-receipt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                <div id="loadingState" class="text-center py-5">
-                    <div class="spinner-border text-primary mb-2" role="status"></div>
-                    <p class="text-muted small mb-0">Sedang mengambil data...</p>
-                </div>
-                <div id="emptyState" class="text-center py-5 d-none">
-                    <i class="bi bi-inbox fs-1 text-muted mb-3"></i>
-                    <p class="text-muted">Belum ada transaksi tercatat.</p>
-                </div>
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Tanggal</th>
+                            <th>Judul</th>
+                            <th>Kategori</th>
+                            <th>Nominal</th>
+                            <th>Ket</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionTable">
+                        </tbody>
+                </table>
+            </div>
+            <div id="loadingState" class="text-center py-5">
+                <div class="spinner-border text-primary mb-2" role="status"></div>
+                <p class="text-muted small">Sedang memuat data...</p>
+            </div>
+            <div id="emptyState" class="text-center py-5 d-none">
+                <p class="text-muted fw-medium">Belum ada data transaksi.</p>
             </div>
         </div>
     </div>
@@ -139,15 +297,20 @@
         const token = localStorage.getItem('accessToken');
         const modalElement = new bootstrap.Modal(document.getElementById('addModal'));
 
-        // 1. Cek Token (Satpam)
         if (!token) {
             alert("Sesi habis, silakan login kembali.");
             window.location.href = 'login.html';
         }
 
-        // 2. Load Data
+        // Helper Format Rupiah (Kita taruh atas biar bisa dipake dimana aja)
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        }
+
+        // 1. Load Data
         async function loadTransactions() {
             try {
+                // Pastikan ada slash di akhir (best practice FastAPI)
                 const response = await fetch('http://127.0.0.1:8000/transactions/', {
                     method: 'GET',
                     headers: {
@@ -157,28 +320,34 @@
                 });
 
                 if (response.status === 401) {
-                    logout(); // Token expired
+                    logout();
                     return;
                 }
 
                 const data = await response.json();
+                
+                // FIX 1: Panggil renderTable SEKALI saja
                 renderTable(data);
+                
+                // Update kartu summary
+                calculateTotal(data);
+
             } catch (error) {
                 console.error("Error:", error);
                 document.getElementById('loadingState').innerHTML = `<p class="text-danger">Gagal koneksi ke server :(</p>`;
             }
         }
 
-        // 3. Render Tabel
+        // 2. Render Tabel
         function renderTable(transactions) {
             const tbody = document.getElementById('transactionTable');
             const loading = document.getElementById('loadingState');
             const empty = document.getElementById('emptyState');
 
-            loading.classList.add('d-none'); // Sembunyikan loading
+            loading.classList.add('d-none');
 
             if (transactions.length === 0) {
-                empty.classList.remove('d-none'); // Tampilkan pesan kosong
+                empty.classList.remove('d-none');
                 return;
             }
 
@@ -188,14 +357,19 @@
                     day: 'numeric', month: 'short', year: 'numeric'
                 });
 
-                const rupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(trx.amount);
+                // Logic Warna Badge
+                let badgeColor = 'bg-secondary';
+                if(trx.category === 'Makanan') badgeColor = 'bg-warning text-dark';
+                if(trx.category === 'Transport') badgeColor = 'bg-info text-dark';
+                if(trx.category === 'Tagihan') badgeColor = 'bg-danger';
+                if(trx.category === 'Elektronik') badgeColor = 'bg-primary';
 
                 const row = `
                     <tr>
                         <td class="ps-4 fw-medium text-secondary">${dateObj}</td>
                         <td class="fw-bold text-dark">${trx.title}</td>
-                        <td><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill">${trx.category}</span></td>
-                        <td class="fw-bold text-danger">${rupiah}</td>
+                        <td><span class="badge ${badgeColor} bg-opacity-10 border border-opacity-25 rounded-pill category-badge">${trx.category}</span></td>
+                        <td class="fw-bold text-danger">${formatRupiah(trx.amount)}</td>
                         <td class="text-muted small">${trx.description || '-'}</td>
                     </tr>
                 `;
@@ -203,7 +377,18 @@
             });
         }
 
-        // 4. Fungsi Simpan Data
+        // 3. Logic Hitung Total
+        function calculateTotal(data) {
+            let totalAmount = 0;
+            data.forEach(trx => {
+                totalAmount += trx.amount;
+            });
+            
+            document.getElementById('totalExpenseDisplay').innerText = formatRupiah(totalAmount);
+            document.getElementById('totalCountDisplay').innerText = data.length + " Transaksi";
+        }
+
+        // 4. Simpan Data
         async function saveTransaction() {
             const title = document.getElementById('inpTitle').value;
             const amount = document.getElementById('inpAmount').value;
@@ -223,7 +408,8 @@
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/transactions', {
+                // Pastikan ada slash di akhir
+                const response = await fetch('http://127.0.0.1:8000/transactions/', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + token,
@@ -233,9 +419,9 @@
                 });
 
                 if (response.ok) {
-                    modalElement.hide(); // Tutup popup
-                    document.getElementById('addForm').reset(); // Bersihin form
-                    loadTransactions(); // Refresh tabel biar data baru muncul
+                    modalElement.hide();
+                    document.getElementById('addForm').reset();
+                    loadTransactions(); 
                 } else {
                     alert("Gagal nyimpen data!");
                 }
@@ -253,5 +439,4 @@
         loadTransactions();
     </script>
 </body>
-
 </html>
