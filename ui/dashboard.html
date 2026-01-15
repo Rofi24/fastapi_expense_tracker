@@ -365,17 +365,20 @@
             transactions.forEach(trx => {
                 const dateObj = new Date(trx.date_posted).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-                let badgeColor = 'bg-secondary';
-                if(trx.category === 'Makanan') badgeColor = 'bg-warning text-dark';
-                if(trx.category === 'Transport') badgeColor = 'bg-info text-dark';
-                if(trx.category === 'Elektronik') badgeColor = 'bg-primary';
-                if(trx.category === 'Tagihan') badgeColor = 'bg-danger';
+                let badgeClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+
+                // Logic Warna-warni
+                if(trx.category === 'Makanan') badgeClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle'; // Kuning
+                if(trx.category === 'Transport') badgeClass = 'bg-info-subtle text-info-emphasis border border-info-subtle'; // Biru Langit
+                if(trx.category === 'Elektronik') badgeClass = 'bg-primary-subtle text-primary-emphasis border border-primary-subtle'; // Biru Tua
+                if(trx.category === 'Hiburan') badgeClass = 'bg-success-subtle text-success-emphasis border border-success-subtle'; // Hijau
+                if(trx.category === 'Tagihan') badgeClass = 'bg-danger-subtle text-danger-emphasis border border-danger-subtle'; // Merah
 
                 const row = `
                     <tr>
                         <td class="ps-4 fw-medium text-secondary">${dateObj}</td>
                         <td class="fw-bold text-dark">${trx.title}</td>
-                        <td><span class="badge ${badgeColor} bg-opacity-10 border border-opacity-25 rounded-pill category-badge">${trx.category}</span></td>
+                        <td><span class="badge ${badgeClass} rounded-pill category-badge">${trx.category}</span></td>
                         <td class="fw-bold text-danger">${formatRupiah(trx.amount)}</td>
                         <td class="text-muted small">${trx.description || '-'}</td>
                         <td class="text-end pe-4">
