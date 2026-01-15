@@ -16,3 +16,7 @@ class UserResponse(UserBase):
     class Config:
         # Ini penting biar Pydantic bisa baca data dari SQLAlchemy
         from_attributes = True
+    
+class Token(BaseModel):
+    access_token: str
+    token_type: str
