@@ -6,6 +6,7 @@ from app.core.database import get_db, engine, Base
 
 # PENTING: Import models di sini biar kebaca sama engine
 from app.models import user, transaction
+from app.routers import auth
 
 # Ini fungsi yang jalan otomatis pas Server Start
 @asynccontextmanager
@@ -18,6 +19,8 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Expense Tracker API", lifespan=lifespan)
+
+app.include_router(auth.router, tags=["Authentication"])
 
 @app.get("/")
 async def root():
