@@ -1,11 +1,15 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from passlib.context import CryptContext
-from ultralytics import settings
-from app.core.config import settings
 from jose import jwt
+from passlib.context import CryptContext
+import os
 
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+# Ambil SECRET_KEY dari Vercel, kalau gak ada pake default string
+SECRET_KEY = os.getenv("SECRET_KEY", "rahasia_default_jangan_dipake_prod")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -18,11 +22,11 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
-        # Default expired 30 menit
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        # Pake variabel lokal di atas
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     
-    # "Stempel" token pake Secret Key kita
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    # Encode pake SECRET_KEY & ALGORITHM dari variabel di atas
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
