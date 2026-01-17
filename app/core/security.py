@@ -30,3 +30,5 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     # Encode pake SECRET_KEY & ALGORITHM dari variabel di atas
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+# Mancing vercel biar update
