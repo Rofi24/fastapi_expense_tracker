@@ -1,27 +1,26 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
+from app.core.config import settings 
 
-# --- AMBIL URL LANGSUNG DARI ENV ---
-DB_URL = os.getenv("DATABASE_URL", "")
+# 1. Ambil URL Database
+DB_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL)
 
-# --- LOGIC FIX URL POSTGRES (Supaya Asyncpg mau baca) ---
+# 2. Fix Bug URL Render
 if DB_URL:
     DB_URL = DB_URL.strip("'").strip('"')
     
-    # Ubah postgres:// jadi postgresql+asyncpg://
+    # Ubah postgresql:// atau postgres:// jadi postgresql+asyncpg://
     if "postgresql+asyncpg://" not in DB_URL:
         if DB_URL.startswith("postgres://"):
             DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
         elif DB_URL.startswith("postgresql://"):
             DB_URL = DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
-if not DB_URL:
-    print("⚠️ WARNING: DATABASE_URL is missing! Server might crash.")
+# 3. Bikin Engine
+engine = create_async_engine(DB_URL, echo=True)
 
-# --- BIKIN ENGINE ---
-engine = create_async_engine(DB_URL, echo=True, pool_pre_ping=True)
-
+# 4. Bikin Session Factory
 SessionLocal = sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -29,8 +28,10 @@ SessionLocal = sessionmaker(
     autoflush=False
 )
 
+# 5. Base Model
 Base = declarative_base()
 
+# 6. Dependency Injection
 async def get_db():
     async with SessionLocal() as session:
         yield session
