@@ -1,26 +1,33 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings 
 
-# 1. Ambil URL Database
-DB_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL)
+# 1. AMBIL URL DARI ENV
+DB_URL = os.getenv("DATABASE_URL")
 
-# 2. Fix Bug URL Render
-if DB_URL:
-    DB_URL = DB_URL.strip("'").strip('"')
-    
-    # Ubah postgresql:// atau postgres:// jadi postgresql+asyncpg://
-    if "postgresql+asyncpg://" not in DB_URL:
-        if DB_URL.startswith("postgres://"):
-            DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
-        elif DB_URL.startswith("postgresql://"):
-            DB_URL = DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+# 2. CEK APAKAH URL ADA?
+if not DB_URL:
+    raise ValueError("FATAL ERROR: DATABASE_URL tidak ditemukan! Cek Environment Variables di Vercel.")
 
-# 3. Bikin Engine
-engine = create_async_engine(DB_URL, echo=True)
+# 3. BERSIHKAN URL (Hapus spasi/kutip yang nyangkut)
+DB_URL = DB_URL.strip().strip("'").strip('"')
 
-# 4. Bikin Session Factory
+# 4. LOGIC GANTI PROTOCOL (Biar Asyncpg mau jalan)
+if "postgresql+asyncpg://" not in DB_URL:
+    if DB_URL.startswith("postgres://"):
+        DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif DB_URL.startswith("postgresql://"):
+        DB_URL = DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+print(f"CONNECTING TO DATABASE: {DB_URL.split('@')[1] if '@' in DB_URL else 'UNKNOWN'}") # Print host doang biar aman
+
+# 5. BIKIN ENGINE
+try:
+    engine = create_async_engine(DB_URL, echo=True, pool_pre_ping=True)
+except Exception as e:
+    print(f"ERROR CREATING ENGINE. URL: {DB_URL}")
+    raise e
+
 SessionLocal = sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -28,10 +35,8 @@ SessionLocal = sessionmaker(
     autoflush=False
 )
 
-# 5. Base Model
 Base = declarative_base()
 
-# 6. Dependency Injection
 async def get_db():
     async with SessionLocal() as session:
         yield session
