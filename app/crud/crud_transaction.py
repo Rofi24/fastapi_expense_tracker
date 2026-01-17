@@ -1,4 +1,4 @@
-from numpy import extract
+from sqlalchemy import extract
 from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
