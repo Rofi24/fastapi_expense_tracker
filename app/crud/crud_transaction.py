@@ -1,3 +1,5 @@
+from numpy import extract
+from sqlalchemy import func
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.transaction import Transaction
@@ -14,13 +16,26 @@ async def create_transaction(db: AsyncSession, transaction: TransactionCreate, u
     return db_transaction
 
 # Logic Get Transaksi (Cuma ambil punya user yg login)
-async def get_transactions(db: AsyncSession, user_id: int, skip: int = 0, limit: int = 100):
-    result = await db.execute(
-        select(Transaction)
-        .filter(Transaction.owner_id == user_id) # <--- Filter penting!
-        .offset(skip)
-        .limit(limit)
-    )
+async def get_transactions(
+    db: AsyncSession, 
+    user_id: int, 
+    skip: int = 0, 
+    limit: int = 100,
+    month: int = None, 
+    year: int = None   
+):
+    stmt = select(Transaction).filter(Transaction.owner_id == user_id)
+    
+    if month:
+        stmt = stmt.filter(func.to_char(Transaction.date_posted, 'MM') == f"{month:02d}")
+        
+    if year:
+        stmt = stmt.filter(func.to_char(Transaction.date_posted, 'YYYY') == str(year))
+    
+    stmt = stmt.order_by(Transaction.date_posted.desc())
+    stmt = stmt.offset(skip).limit(limit)
+    
+    result = await db.execute(stmt)
     return result.scalars().all()
 
 # FUNGSI DELETE

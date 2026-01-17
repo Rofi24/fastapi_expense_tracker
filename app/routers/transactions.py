@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
 from app.core.database import get_db
 from app.schemas.transaction import TransactionCreate, TransactionResponse
 from app.crud import crud_transaction
@@ -24,11 +24,20 @@ async def create_transaction(
 async def read_transactions(
     skip: int = 0,
     limit: int = 100,
+    month: Optional[int] = None,
+    year: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user) # <--- SI SATPAM
+    current_user: User = Depends(get_current_user)
 ):
-    # Cuma balikin data punya user yang lagi login
-    return await crud_transaction.get_transactions(db=db, user_id=current_user.id, skip=skip, limit=limit)
+    transactions = await crud_transaction.get_transactions(
+        db, 
+        user_id=current_user.id, 
+        skip=skip, 
+        limit=limit,
+        month=month,
+        year=year
+    )
+    return transactions
 
 # 3. ENDPOINT DELETE
 @router.delete("/{transaction_id}")
