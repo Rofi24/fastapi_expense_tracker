@@ -1,13 +1,19 @@
+import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings
+from app.core.config import settings 
 
-# 1. Bikin Engine (Mesin Koneksi)
-# echo=True biar kita bisa liat SQL query-nya di terminal (bagus buat debug)
-engine = create_async_engine(settings.DATABASE_URL, echo=True)
+# 1. Ambil URL Database
+DB_URL = os.getenv("DATABASE_URL", settings.DATABASE_URL)
 
-# 2. Bikin Session Factory
-# Ini pabrik yang bakal bikinin session database buat tiap request user
+# 2. Fix Bug URL Render
+if DB_URL and DB_URL.startswith("postgres://"):
+    DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+
+# 3. Bikin Engine
+engine = create_async_engine(DB_URL, echo=True)
+
+# 4. Bikin Session Factory
 SessionLocal = sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -15,12 +21,10 @@ SessionLocal = sessionmaker(
     autoflush=False
 )
 
-# 3. Base Class buat Model
-# Nanti semua tabel (User, Transaction) bakal inherit dari class ini
+# 5. Base Model
 Base = declarative_base()
 
-# 4. Dependency Injection
-# Fungsi ini bakal dipake di setiap Route API buat dapet koneksi DB
+# 6. Dependency Injection
 async def get_db():
     async with SessionLocal() as session:
         yield session
