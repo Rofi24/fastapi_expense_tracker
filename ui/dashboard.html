@@ -38,8 +38,10 @@
 
         .card {
             background-color: var(--card-dark);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+            transition: transform 0.2s ease;
         }
 
         .text-gold {
@@ -63,19 +65,35 @@
 
         .table {
             color: var(--text-main);
+            border-collapse: separate;
+            border-spacing: 0 8px; 
         }
 
         .table th {
-            background-color: #252525;
+            background-color: transparent;
             color: var(--text-muted);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            padding-bottom: 12px;
         }
 
         .table td {
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
             vertical-align: middle;
             background-color: transparent !important;
             color: var(--text-main) !important; 
+            padding: 16px 8px;
+            transition: opacity 0.5s ease; 
+        }
+
+        .badge {
+            border-radius: 50rem;
+            padding: 0.4em 0.8em;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .modal-content {
@@ -120,7 +138,7 @@
             <div class="col-md-6 mb-3">
                 <div class="card p-4">
                     <p class="text-muted mb-1">Total Pengeluaran Bulan Ini</p>
-                    <h2 class="text-green fw-bold mb-0" id="totalExpenseDisplay">Rp 0</h2>
+                    <h1 class="text-green fw-bolder mb-0 display-5" id="totalExpenseDisplay" style="letter-spacing: -1px;">Rp 0</h1>
                 </div>
             </div>
             <div class="col-md-6 mb-3 d-flex flex-column align-items-end justify-content-center">
@@ -351,8 +369,8 @@
 
                 // Tombol Bayar hilang kalau udah lunas
                 const payButton = isPaidThisMonth ? '' : `
-                    <button class="btn btn-sm btn-outline-success me-2" onclick="payTransaction(${trx.id})" title="Tandai Lunas">
-                        <i class="bi bi-cash-stack"></i>
+                    <button class="btn btn-sm btn-success rounded-circle me-1" onclick="payTransaction(${trx.id})" title="Tandai Lunas" style="width: 32px; height: 32px; padding: 0;">
+                        <i class="bi bi-check-lg"></i>
                     </button>`;
 
                 if (trx.category === 'Cicilan') {
@@ -364,10 +382,12 @@
                         <td class="fw-bold">${formatRupiah(trx.amount)}</td>
                         <td class="text-end">
                             ${payButton}
-                            <button class="btn btn-sm btn-outline-warning me-2" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})">
-                                <i class="bi bi-pencil-square"></i>
+                            <button class="btn btn-sm btn-light rounded-circle me-1 text-warning" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; padding: 0;">
+                                <i class="bi bi-pencil-fill"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTransaction(${trx.id})"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-light rounded-circle text-danger" onclick="deleteTransaction(${trx.id})" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; padding: 0;">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
                         </td>
                     `;
                     cicilanBody.appendChild(tr);
@@ -377,10 +397,12 @@
                         <td class="fw-bold">${formatRupiah(trx.amount)}</td>
                         <td class="text-end">
                             ${payButton}
-                            <button class="btn btn-sm btn-outline-warning me-2" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})">
-                                <i class="bi bi-pencil-square"></i>
+                            <button class="btn btn-sm btn-light rounded-circle me-1 text-warning" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; padding: 0;">
+                                <i class="bi bi-pencil-fill"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTransaction(${trx.id})"><i class="bi bi-trash"></i></button>
+                            <button class="btn btn-sm btn-light rounded-circle text-danger" onclick="deleteTransaction(${trx.id})" style="background: rgba(255,255,255,0.05); border: none; width: 32px; height: 32px; padding: 0;">
+                                <i class="bi bi-trash3-fill"></i>
+                            </button>
                         </td>
                     `;
                     rutinBody.appendChild(tr);
