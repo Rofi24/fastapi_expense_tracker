@@ -79,7 +79,7 @@
                 </div>
             </div>
             <div class="col-md-6 mb-3 d-flex align-items-center justify-content-end">
-                <button class="btn btn-green px-4 py-2" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                <button class="btn btn-green px-4 py-2" onclick="openAddModal()">
                     <i class="bi bi-plus-lg me-2"></i>Tambah Catatan
                 </button>
             </div>
@@ -180,7 +180,39 @@
         if (!token) window.location.href = 'login.html';
 
         const modalElement = new bootstrap.Modal(document.getElementById('transactionModal'));
-        
+        let editingId = null; // Kunci utama buat bedain Tambah vs Edit
+
+        // Fungsi buat reset form pas mau nambah data baru
+        function openAddModal() {
+            editingId = null;
+            document.querySelector('.modal-title').innerText = "Tambah Catatan";
+            document.getElementById('transactionForm').reset();
+            document.getElementById('cicilanFields').classList.add('d-none');
+            modalElement.show();
+        }
+
+        // Fungsi buat isi form otomatis pas mau ngedit data
+        function openEditModal(trx) {
+            editingId = trx.id;
+            document.querySelector('.modal-title').innerText = "Edit Catatan";
+            
+            document.getElementById('category').value = trx.category;
+            document.getElementById('title').value = trx.title;
+            document.getElementById('amount').value = trx.amount;
+            
+            const cicilanFields = document.getElementById('cicilanFields');
+            if(trx.category === 'Cicilan') {
+                cicilanFields.classList.remove('d-none');
+                document.getElementById('platform').value = trx.platform;
+                document.getElementById('tanggal_tempo').value = trx.tanggal_tempo;
+                document.getElementById('tenor_berjalan').value = trx.tenor_berjalan;
+                document.getElementById('total_tenor').value = trx.total_tenor;
+            } else {
+                cicilanFields.classList.add('d-none');
+            }
+            modalElement.show();
+        }
+
         // Logika nampilin form cicilan
         document.getElementById('category').addEventListener('change', function() {
             const cicilanFields = document.getElementById('cicilanFields');
@@ -226,6 +258,9 @@
                         <td>(${trx.tenor_berjalan || 0}/${trx.total_tenor || 0})</td>
                         <td class="fw-bold">${formatRupiah(trx.amount)}</td>
                         <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning me-2" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteTransaction(${trx.id})"><i class="bi bi-trash"></i></button>
                         </td>
                     `;
@@ -235,6 +270,9 @@
                         <td class="fw-medium">${trx.title}</td>
                         <td class="fw-bold">${formatRupiah(trx.amount)}</td>
                         <td class="text-end">
+                            <button class="btn btn-sm btn-outline-warning me-2" onclick="openEditModal(${JSON.stringify(trx).replace(/"/g, '&quot;')})">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteTransaction(${trx.id})"><i class="bi bi-trash"></i></button>
                         </td>
                     `;
@@ -243,34 +281,37 @@
             });
         }
 
+        // LOGIKA DINAMIS: Bisa POST (Baru) atau PUT (Update)
         document.getElementById('transactionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const category = document.getElementById('category').value;
             
             const payload = {
                 title: document.getElementById('title').value,
                 amount: parseFloat(document.getElementById('amount').value),
-                category: category,
+                category: document.getElementById('category').value,
                 platform: document.getElementById('platform').value || null,
                 tanggal_tempo: document.getElementById('tanggal_tempo').value || null,
                 tenor_berjalan: document.getElementById('tenor_berjalan').value ? parseInt(document.getElementById('tenor_berjalan').value) : null,
                 total_tenor: document.getElementById('total_tenor').value ? parseInt(document.getElementById('total_tenor').value) : null
             };
 
+            const url = editingId 
+                ? `http://127.0.0.1:8000/transactions/${editingId}` 
+                : 'http://127.0.0.1:8000/transactions/';
+            const method = editingId ? 'PUT' : 'POST'; // Pakai PUT kalau editingId ada isinya
+
             try {
-                const response = await fetch('http://127.0.0.1:8000/transactions/', {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
                     modalElement.hide();
-                    document.getElementById('transactionForm').reset();
-                    document.getElementById('cicilanFields').classList.add('d-none');
                     loadTransactions();
                 } else {
-                    alert("Gagal menyimpan data!");
+                    alert("Gagal memproses data!");
                 }
             } catch (error) { console.error(error); }
         });
