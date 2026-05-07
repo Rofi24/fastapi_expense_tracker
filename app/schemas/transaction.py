@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 
@@ -15,6 +16,7 @@ class TransactionCreate(TransactionBase):
 
 class TransactionResponse(TransactionBase):
     id: int
+    last_paid_at: Optional[datetime] = None
     user_id: int
 
     class Config:

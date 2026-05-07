@@ -1,10 +1,10 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List
-
 from app.core.database import get_db
-from app.models.transaction import Transaction
+from app.models.transaction import PaymentLog, Transaction
 from app.schemas.transaction import TransactionCreate, TransactionResponse
 from app.models.user import User
 # Pastikan import get_current_user sesuai dengan lokasi file dependencies lu
@@ -85,3 +85,25 @@ async def delete_transaction(
     await db.delete(transaction)
     await db.commit()
     return {"message": "Transaksi berhasil dihapus"}
+
+# Endpoint buat proses bayar
+@router.post("/{transaction_id}/pay")
+async def pay_transaction(transaction_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    result = await db.execute(select(Transaction).where(Transaction.id == transaction_id, Transaction.user_id == current_user.id))
+    trx = result.scalar_one_or_none()
+    
+    if not trx: raise HTTPException(status_code=404, detail="Data tidak ditemukan")
+    
+    trx.last_paid_at = datetime.now() # Catat waktu bayar sekarang
+    if trx.category == "Cicilan": trx.tenor_berjalan += 1 # Tenor otomatis naik
+    
+    new_log = PaymentLog(transaction_id=trx.id, title=trx.title, amount=trx.amount, user_id=current_user.id)
+    db.add(new_log)
+    await db.commit()
+    return {"message": "Lunas bro!"}
+
+# Endpoint buat tarik data riwayat
+@router.get("/history/logs")
+async def get_payment_logs(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    result = await db.execute(select(PaymentLog).where(PaymentLog.user_id == current_user.id).order_by(PaymentLog.paid_at.desc()).limit(10))
+    return result.scalars().all()
