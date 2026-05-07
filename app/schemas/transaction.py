@@ -1,27 +1,21 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional
 
-# Base Schema (Field dasar)
 class TransactionBase(BaseModel):
     title: str
     amount: float
-    category: str = "General"
-    description: Optional[str] = None
+    category: str
+    tanggal_tempo: Optional[str] = None
+    tenor_berjalan: Optional[int] = None
+    total_tenor: Optional[int] = None
+    platform: Optional[str] = None
 
-# Schema buat Create (Input dari user)
 class TransactionCreate(TransactionBase):
     pass
 
-# Schema buat Edit (Input dari user)
-class TransactionUpdate(TransactionCreate):
-    pass
-
-# Schema buat Response (Output ke user)
 class TransactionResponse(TransactionBase):
     id: int
-    date_posted: datetime
-    owner_id: int
+    user_id: int
 
     class Config:
         from_attributes = True

@@ -1,79 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
+from sqlalchemy.future import select
+from typing import List
+
 from app.core.database import get_db
+from app.models.transaction import Transaction
 from app.schemas.transaction import TransactionCreate, TransactionResponse
-from app.crud import crud_transaction
-from app.dependencies import get_current_user
 from app.models.user import User
+# Pastikan import get_current_user sesuai dengan lokasi file dependencies lu
+from app.dependencies import get_current_user
 
 router = APIRouter()
 
-# 1. Endpoint buat CATAT Transaksi
+# Endpoint nambah transaksi/cicilan baru
 @router.post("/", response_model=TransactionResponse)
 async def create_transaction(
-    transaction: TransactionCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user) # <--- SI SATPAM
-):
-    # Kita ambil ID user dari token, terus kirim ke CRUD
-    return await crud_transaction.create_transaction(db=db, transaction=transaction, user_id=current_user.id)
-
-# 2. Endpoint buat LIHAT History Transaksi
-@router.get("/", response_model=List[TransactionResponse])
-async def read_transactions(
-    skip: int = 0,
-    limit: int = 100,
-    month: Optional[int] = None,
-    year: Optional[int] = None,
+    transaction: TransactionCreate, 
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    transactions = await crud_transaction.get_transactions(
-        db, 
-        user_id=current_user.id, 
-        skip=skip, 
-        limit=limit,
-        month=month,
-        year=year
+    # Pydantic schema di-unpack langsung ke model SQLAlchemy
+    new_transaction = Transaction(
+        **transaction.model_dump(),
+        user_id=current_user.id
     )
+    db.add(new_transaction)
+    await db.commit()
+    await db.refresh(new_transaction)
+    return new_transaction
+
+# Endpoint narik semua data transaksi user yang lagi login
+@router.get("/", response_model=List[TransactionResponse])
+async def read_transactions(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(Transaction).where(Transaction.user_id == current_user.id)
+    )
+    transactions = result.scalars().all()
     return transactions
 
-# 3. ENDPOINT DELETE
+# Endpoint hapus transaksi
 @router.delete("/{transaction_id}")
 async def delete_transaction(
     transaction_id: int, 
-    db: AsyncSession = Depends(get_db), 
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Pake await karena crud-nya async
-    deleted_item = await crud_transaction.remove_transaction(
-        db=db, 
-        transaction_id=transaction_id, 
-        user_id=current_user.id
+    result = await db.execute(
+        select(Transaction).where(Transaction.id == transaction_id, Transaction.user_id == current_user.id)
     )
+    transaction = result.scalar_one_or_none()
     
-    if not deleted_item:
+    if transaction is None:
         raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
         
-    return {"message": "Berhasil dihapus"}
-
-# 4, ENDPOIT EDIT
-@router.put("/{transaction_id}")
-async def update_transaction(
-    transaction_id: int, 
-    transaction_data: TransactionCreate, # pake schema Create buat update
-    db: AsyncSession = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
-):
-    updated_item = await crud_transaction.update_transaction(
-        db=db, 
-        transaction_id=transaction_id, 
-        transaction_data=transaction_data, 
-        user_id=current_user.id
-    )
-    
-    if not updated_item:
-        raise HTTPException(status_code=404, detail="Transaksi tidak ditemukan")
-        
-    return updated_item
+    await db.delete(transaction)
+    await db.commit()
+    return {"message": "Transaksi berhasil dihapus"}

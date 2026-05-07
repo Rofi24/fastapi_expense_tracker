@@ -1,22 +1,22 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from app.core.database import Base
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    amount = Column(Float, nullable=False)
-    category = Column(String, default="General")
-    description = Column(String, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
     
-    # func.now() biar otomatis ngisi tanggal saat ini pas data dibuat
-    date_posted = Column(DateTime(timezone=True), server_default=func.now())
+    # Data dasar
+    title = Column(String, index=True) # Misal: "Cicilan Rumah"
+    amount = Column(Float)             # Nominal
+    category = Column(String)          # Isinya: "Rutin" atau "Cicilan"
     
-    # Foreign Key: Ini "tali" pengikat ke tabel users (users.id)
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    # Data tambahan buat tracking cicilan (seperti di Excel lu)
+    tanggal_tempo = Column(String, nullable=True)   # Misal: "11 mei, 11 jun"
+    tenor_berjalan = Column(Integer, nullable=True)  # Cicilan ke-berapa (misal: 1)
+    total_tenor = Column(Integer, nullable=True)     # Total tenor (misal: 3)
+    platform = Column(String, nullable=True)         # Misal: "shopee", "tiktok", "adakami"
 
-    # Relasi biar codingan enak: transaction.owner
-    owner = relationship("User", backref="transactions")
+    user = relationship("User", back_populates="transactions")

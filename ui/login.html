@@ -1,172 +1,256 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Masuk - ExpensePro</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Masuk - App Keuangan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8f9fa; }
-        
-        .login-image-side {
-            background-image: url('https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            min-height: 100vh;
+        :root {
+            --accent-green: #10b981;
+            --accent-gold: #fbbf24;
+            --bg-dark: #0b0d10;
+            --card-bg: rgba(22, 25, 30, 0.6);
         }
 
-        .login-form-side {
-            min-height: 100vh;
+        body {
+            background-color: var(--bg-dark);
+            /* Efek cahaya gradasi halus di background */
+            background-image: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.15), transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(251, 191, 36, 0.05), transparent 50%);
+            color: #e0e0e0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            min-height: 100vh;
+            margin: 0;
         }
 
-        .login-box { width: 100%; max-width: 420px; }
-        
-        .form-control, .input-group-text {
-            padding: 0.8rem;
-            border-color: #e2e8f0;
-            background-color: #fcfcfc;
-        }
-        
-        .form-control:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+        .auth-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 10;
         }
 
-        /* Cursor pointer buat ikon mata */
-        .cursor-pointer { cursor: pointer; }
+        /* Efek Glassmorphism untuk Card */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
 
-        .btn-primary { padding: 0.8rem; font-weight: 600; }
-        .brand-logo { font-weight: 800; color: #0d6efd; letter-spacing: -1px; }
+        /* Ikon Logo / Accent Atas */
+        .brand-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--accent-green), #047857);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Floating Labels Bootstrap */
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-floating>.form-control {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border-radius: 14px;
+            height: 60px;
+        }
+
+        .form-floating>.form-control:focus {
+            background-color: rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .form-floating>label {
+            color: #808080;
+            padding-left: 1rem;
+        }
+
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label {
+            color: var(--accent-green);
+            transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+            background: transparent;
+        }
+
+        /* Tombol dengan Glow Effect */
+        .btn-glow {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05rem;
+            border: none;
+            border-radius: 14px;
+            padding: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
+            color: #fff;
+        }
+
+        .text-gold {
+            color: var(--accent-gold);
+        }
+
+        .header-text {
+            letter-spacing: -0.5px;
+        }
+
+        .toggle-link {
+            color: var(--accent-green);
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .toggle-link:hover {
+            color: var(--accent-gold);
+        }
     </style>
 </head>
+
 <body>
-
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-            
-            <div class="col-lg-6 d-none d-lg-block login-image-side"></div>
-
-            <div class="col-lg-6 login-form-side bg-white">
-                <div class="login-box">
-                    <div class="mb-5">
-                        <h2 class="brand-logo mb-4"><i class="bi bi-wallet2 me-2"></i>ExpensePro</h2>
-                        <h3 class="fw-bold text-dark mb-2">Selamat Datang</h3>
-                        <p class="text-muted">Silakan masuk untuk mengelola keuanganmu.</p>
-                    </div>
-
-                    <div id="alertMsg" class="alert alert-danger d-none mb-4 border-0 bg-danger-subtle text-danger fw-medium" role="alert">
-                        <i class="bi bi-exclamation-circle-fill me-2"></i> <span id="alertText"></span>
-                    </div>
-                    
-                    <form id="loginForm">
-                        <div class="mb-4">
-                            <label for="email" class="form-label fw-medium text-secondary small">Email Address</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" class="form-control" id="email" required placeholder="name@example.com">
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="password" class="form-label fw-medium text-secondary small">Password</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                <input type="password" class="form-control" id="password" required placeholder="Masukkan password">
-                                <span class="input-group-text cursor-pointer" id="togglePassword">
-                                    <i class="bi bi-eye-slash" id="eyeIcon"></i>
-                                </span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="rememberMe">
-                                <label class="form-check-label text-secondary small" for="rememberMe">Ingat saya</label>
-                            </div>
-                            <a href="#" class="text-decoration-none small fw-medium">Lupa Password?</a>
-                        </div>
-
-                        <button type="submit" id="loginBtn" class="btn btn-primary w-100 btn-lg mb-4">
-                            Masuk Sekarang <i class="bi bi-arrow-right ms-2"></i>
-                        </button>
-
-                        <p class="text-center text-secondary small">
-                            Belum punya akun? <a href="#" class="text-decoration-none fw-bold">Daftar di sini</a>
-                        </p>
-                    </form>
-
+    <div class="auth-wrapper">
+        <div class="glass-card">
+            <div class="text-center mb-4">
+                <div class="brand-icon">
+                    <i class="bi bi-wallet2"></i>
                 </div>
+                <h3 class="text-gold fw-bold header-text" id="formTitle">Selamat Datang</h3>
+                <p class="text-muted" id="formSubtitle">Masuk ke catatan keuanganmu</p>
+            </div>
+
+            <form id="authForm">
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="email" placeholder="name@example.com" required>
+                    <label for="email"><i class="bi bi-envelope me-2"></i>Alamat Email</label>
+                </div>
+
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" placeholder="Password" required>
+                    <label for="password"><i class="bi bi-shield-lock me-2"></i>Kata Sandi</label>
+                </div>
+
+                <button type="submit" class="btn btn-glow w-100 mb-4" id="submitBtn">Masuk Sekarang</button>
+            </form>
+
+            <div class="text-center">
+                <p class="text-muted mb-0" id="toggleText" style="font-size: 0.95rem;">
+                    Pengguna baru? <span class="toggle-link" onclick="toggleMode()">Buat akun disini</span>
+                </p>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. LOGIC TOMBOL MATA (SHOW/HIDE PASSWORD) ---
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
+        let isLogin = true;
 
-        togglePassword.addEventListener('click', function () {
-            // Cek tipe sekarang: kalau password ubah ke text, dan sebaliknya
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            
-            // Ubah ikon mata (slash atau biasa)
-            eyeIcon.classList.toggle('bi-eye');
-            eyeIcon.classList.toggle('bi-eye-slash');
-        });
+        function toggleMode() {
+            isLogin = !isLogin;
+            const title = document.getElementById('formTitle');
+            const subtitle = document.getElementById('formSubtitle');
+            const btn = document.getElementById('submitBtn');
+            const toggle = document.getElementById('toggleText');
 
-        // --- 2. LOGIC LOGIN (SAMA KAYAK SEBELUMNYA) ---
-        const form = document.getElementById('loginForm');
-        const alertBox = document.getElementById('alertMsg');
-        const alertText = document.getElementById('alertText');
-        const loginBtn = document.getElementById('loginBtn');
-        const originalBtnText = loginBtn.innerHTML;
+            title.style.opacity = 0; subtitle.style.opacity = 0;
 
-        form.addEventListener('submit', async (e) => {
+            setTimeout(() => {
+                title.innerText = isLogin ? 'Selamat Datang' : 'Buat Akun';
+                subtitle.innerText = isLogin ? 'Masuk ke catatan keuanganmu' : 'Mulai rapiin pengeluaranmu hari ini';
+                btn.innerText = isLogin ? 'Masuk Sekarang' : 'Daftar Sekarang';
+                toggle.innerHTML = isLogin
+                    ? 'Pengguna baru? <span class="toggle-link" onclick="toggleMode()">Buat akun disini</span>'
+                    : 'Sudah punya akun? <span class="toggle-link" onclick="toggleMode()">Masuk disini</span>';
+
+                title.style.opacity = 1; subtitle.style.opacity = 1;
+            }, 150);
+        }
+
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading...';
-            alertBox.classList.add('d-none');
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
 
-            const formData = new URLSearchParams();
-            formData.append('username', email);
-            formData.append('password', password);
+            const originalText = btn.innerText;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+            btn.disabled = true;
 
             try {
-                const response = await fetch('http://127.0.0.1:8000/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: formData
-                });
+                if (isLogin) {
+                    const formData = new FormData();
+                    formData.append('username', email);
+                    formData.append('password', password);
 
-                const data = await response.json();
+                    // Panggil ke /token sesuai auth.py
+                    const res = await fetch('http://127.0.0.1:8000/token', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-                if (response.ok) {
-                    localStorage.setItem('accessToken', data.access_token);
-                    window.location.href = 'dashboard.html'; 
+                    if (res.ok) {
+                        const data = await res.json();
+                        localStorage.setItem('accessToken', data.access_token);
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        alert('Gagal login: Email atau Kata Sandi salah!');
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
                 } else {
-                    throw new Error(data.detail || "Email atau password salah!");
+                    // Panggil ke /register sesuai auth.py
+                    const res = await fetch('http://127.0.0.1:8000/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+
+                    if (res.ok) {
+                        alert('Sukses! Akun berhasil dibuat. Silakan masuk.');
+                        toggleMode();
+                        document.getElementById('password').value = '';
+                    } else {
+                        const data = await res.json();
+                        alert('Gagal daftar: ' + (data.detail || 'Email sudah digunakan'));
+                    }
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 }
-            } catch (error) {
-                alertText.innerText = error.message === 'Failed to fetch' ? 'Server tidak merespons!' : error.message;
-                alertBox.classList.remove('d-none');
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = originalBtnText;
+            } catch (err) {
+                alert('Server belum merespon. Coba cek terminal Uvicorn lu.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         });
     </script>
 </body>
+
 </html>

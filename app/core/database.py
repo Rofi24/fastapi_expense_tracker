@@ -1,47 +1,40 @@
 import os
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# 1. AMBIL URL DARI ENV
+# 1. LOAD .env BIAR BISA BACA DATABASE_URL
+load_dotenv()
+
 DB_URL = os.getenv("DATABASE_URL")
 
-# 2. CEK APAKAH URL ADA?
 if not DB_URL:
-    raise ValueError("❌ FATAL ERROR: DATABASE_URL tidak ditemukan! Cek Environment Variables di Vercel.")
+    raise ValueError("❌ DATABASE_URL tidak ditemukan!")
 
-# 3. BERSIHKAN URL
 DB_URL = DB_URL.strip().strip("'").strip('"')
 
-# 4. FIX PROTOCOL (Wajib buat Asyncpg)
+# 2. LOGIKA SSL DINAMIS (Biar localhost gak crash)
+konfigurasi_koneksi = {}
+if "localhost" not in DB_URL and "127.0.0.1" not in DB_URL:
+    konfigurasi_koneksi = {"ssl": "require"}
+    print("🔒 Mode SSL Aktif")
+else:
+    print("🔓 Mode Non-SSL (Localhost)")
+
+# 3. FIX PROTOCOL
 if "postgresql+asyncpg://" not in DB_URL:
-    if DB_URL.startswith("postgres://"):
-        DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
-    elif DB_URL.startswith("postgresql://"):
-        DB_URL = DB_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    DB_URL = DB_URL.replace("postgres://", "postgresql+asyncpg://", 1)
 
-# 5. --- JURUS ANTI-ERROR SSLMODE ---
-# Asyncpg bakal crash kalau ada '?sslmode=' di URL. Kita buang bagian itu.
 if "?" in DB_URL:
-    DB_URL = DB_URL.split("?")[0]  # Ambil bagian depan tanda tanya aja
+    DB_URL = DB_URL.split("?")[0]
 
-print(f"✅ CLEANED DB URL: {DB_URL}") # Debugging (aman, password gak ke-print full biasanya)
-
-# 6. BIKIN ENGINE DENGAN SSL EXPLICIT
-# Kita masukin settingan SSL lewat connect_args, bukan lewat URL
 engine = create_async_engine(
     DB_URL,
     echo=True,
-    pool_pre_ping=True,
-    connect_args={"ssl": "require"}  # <-- INI KUNCINYA BIAR NEON MAU KONEK
+    connect_args=konfigurasi_koneksi 
 )
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    autocommit=False,
-    autoflush=False
-)
-
+SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, autocommit=False, autoflush=False)
 Base = declarative_base()
 
 async def get_db():
