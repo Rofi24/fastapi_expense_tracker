@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
-      "destination": "/app/main.py"
+      "source": "/",
+      "destination": "/login.html"
     }
   ]
 }
