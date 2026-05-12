@@ -16,7 +16,7 @@ DB_URL = DB_URL.strip().strip("'").strip('"')
 # 2. LOGIKA SSL DINAMIS (Biar localhost gak crash, tapi Neon aman)
 konfigurasi_koneksi = {}
 if "localhost" not in DB_URL and "127.0.0.1" not in DB_URL:
-    konfigurasi_koneksi = {"ssl": "require"}
+    konfigurasi_koneksi = {"ssl": "true"}
     print("🔒 Mode SSL Aktif (Production)")
 else:
     print("🔓 Mode Non-SSL (Localhost)")
